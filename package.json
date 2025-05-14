@@ -1,5 +1,5 @@
 {
-  "name": "gitcopy",
+  "name": "git-copy",
   "version": "0.0.0-development",
   "description": "A utility command to copy any folders or files of any public github/gitlab/bitbucket repo to selected path, without copying the whole repo",
   "files": [
