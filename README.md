@@ -3,12 +3,12 @@
 
 # Road map
 
-## Services
+## Features
+- [ ] Add a command to copy files or folder from remote gh repo to local repo
+- [ ] Add a command to see history of copying files, by integrating with sqlite 
 - [ ] Support for github
 - [ ] Support for gitlab
 - [ ] Support for bitbucket
-
-## Platforms
 - [ ] Support for Linux/Unix/Macos
 - [ ] Support for Windows
 
