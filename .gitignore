@@ -117,3 +117,9 @@ dist
 
 # Compiled code
 lib/
+
+.idea**
+.vscode**
+
+coverage**
+lib**
