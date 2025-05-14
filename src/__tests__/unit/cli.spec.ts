@@ -1,8 +1,9 @@
+import { readFileSync } from "fs";
 import { resolve } from "path";
 
 describe("cli", () => {
   it("should exist", () => {
-    const cli = require(resolve(__dirname, "../../cli"));
+    const cli = readFileSync(resolve(__dirname, "../../cli.ts"), "utf8");
 
     expect(cli).toBeTruthy();
   });
