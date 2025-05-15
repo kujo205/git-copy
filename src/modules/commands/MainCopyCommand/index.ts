@@ -1,5 +1,5 @@
 import { Command } from "commander";
-import type { CommandWrapper, TCommand } from "../../types";
+import type { CommandWrapper, TCommand } from "../../../types";
 
 // Adapter pattern
 export class MainCopyCommand implements CommandWrapper {

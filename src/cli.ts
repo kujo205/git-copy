@@ -1,6 +1,6 @@
 import Main from "./modules/Main";
 import { MainCopyCommand } from "./modules/commands/MainCopyCommand";
 
-const commands = [new MainCommand()];
+const commands = [new MainCopyCommand()];
 
 const argParser = new Main(commands);
