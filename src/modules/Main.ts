@@ -6,7 +6,7 @@ import type { CommandWrapper, TCommand } from "../types";
  * Adapter pattern
  */
 
-class ArgParser {
+class Main {
   private program: TCommand;
 
   /**
@@ -32,4 +32,4 @@ class ArgParser {
   }
 }
 
-export default ArgParser;
+export default Main;

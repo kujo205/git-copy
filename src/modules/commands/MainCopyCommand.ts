@@ -2,7 +2,7 @@ import { Command } from "commander";
 import type { CommandWrapper, TCommand } from "../../types";
 
 // Adapter pattern
-export class MainCommand implements CommandWrapper {
+export class MainCopyCommand implements CommandWrapper {
   command: TCommand;
 
   constructor() {
