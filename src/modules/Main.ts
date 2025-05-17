@@ -1,4 +1,4 @@
-import commander, { Command } from "commander";
+import { Command } from "commander";
 const packageJson = require("../../package.json");
 import type { CommandWrapper, TCommand } from "../types";
 
