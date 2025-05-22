@@ -1,3 +1,11 @@
+import * as fs from "fs";
+import { Readable } from "stream";
+import { Octokit } from "@octokit/core";
+import * as tar from "tar-stream";
+
+import { createGunzip } from "zlib";
+
+import * as path from "path";
 import type { TCopySourceStrategy } from "../../../types";
 
 type GithubApiHelperObject = {
@@ -5,76 +13,156 @@ type GithubApiHelperObject = {
   ghRepo: string;
   ref: string;
   path: string[];
+  destination: string;
 };
 
 class GithubCopySourceStrategy implements TCopySourceStrategy {
   regex = /^https?:\/\/github\.com\/([^/]+)\/([^/]+)/;
+  client: Octokit;
+
+  constructor() {
+    this.client = new Octokit({
+      auth: process.env.GITHUB_API_KEY,
+    });
+  }
 
   async copy(source: string, destination = ".") {
     const url = new URL(source);
     const segments = url.pathname.split("/").filter(Boolean);
-    const [ghUser, ghRepo, blobOrTree, ref, ...path] = segments;
+    const [ghUser, ghRepo, _, ref, ...path] = segments;
 
     const helperObject = {
       ghRepo: ghRepo,
       ghUser: ghUser,
       ref,
       path,
+      destination,
     } satisfies GithubApiHelperObject;
 
-    // eg: source is like
-    // https://github.com/octokit/webhooks.net/tree/main/samples
-    // https://github.com/kujo205/musc
-    // https://github.com/octokit/webhooks.net/blob/ba39c84a7804e034aac979b2079fb49f1359558e/.github/workflows/codeql-analysis.yml
+    await this.downloadTarball(helperObject);
+  }
 
-    if (blobOrTree === "blob") {
-      await this.copyBlob(helperObject);
-    } else if (blobOrTree === "tree") {
-      await this.copyTree(helperObject);
-    } else if (segments.length === 2) {
-      await this.copyWholeRepo(helperObject);
-    } else {
-      throw new Error(
-        `Cannot parse copy assets from '${source}'\nPlease specify a folder containing correct url`,
+  async downloadTarball(config: GithubApiHelperObject) {
+    const targetedPath = config.path.join("/");
+
+    try {
+      const resp = await fetch(
+        `https://api.github.com/repos/${config.ghUser}/${config.ghRepo}/tarball/${config.ref}`,
       );
+
+      if (!resp.ok) {
+        throw new Error(`GitHub API error: ${resp.status} ${resp.statusText}`);
+      }
+
+      if (!resp.body) {
+        throw new Error("No response body received from GitHub API");
+      }
+
+      const webStream = resp.body;
+      const nodeStream = this.toNodeReadable(webStream);
+
+      // Create gunzip and extract streams
+      const gunzip = createGunzip();
+      const extract = tar.extract();
+
+      // Build the target path from config.path
+      const targetedPath = config.path.join("/");
+      console.log("Looking for files in:", targetedPath);
+
+      // Handle extraction
+      extract.on("entry", (header, stream, next) => {
+        // GitHub tarballs have a root folder, we need to strip it
+        const pathParts = header.name.split("/");
+        const relativePath = pathParts.slice(1).join("/"); // Remove root folder
+
+        // Skip if the file/directory is not in our target path
+        if (!relativePath.startsWith(targetedPath)) {
+          console.log("Skipping:", relativePath);
+          stream.resume(); // Consume and discard the stream
+          stream.on("end", next);
+          return;
+        }
+
+        // Calculate the destination path - preserve the target directory name
+        // Extract the last segment of targetedPath as the base folder name
+        const targetFolderName = targetedPath.split("/").pop() || "extracted";
+
+        // Get the relative path within the target directory
+        const pathWithinTarget = relativePath
+          .substring(targetedPath.length)
+          .replace(/^\//, "");
+
+        // Build final destination: targetFolder/pathWithinTarget
+        const destinationPath = pathWithinTarget
+          ? path.join(targetFolderName, pathWithinTarget)
+          : targetFolderName;
+
+        if (header.type === "file") {
+          // Create the file
+          const fullPath = path.join(config.destination, destinationPath);
+          const dir = path.dirname(fullPath);
+
+          // Ensure directory exists
+          fs.mkdirSync(dir, { recursive: true });
+
+          // Write file
+          const writeStream = fs.createWriteStream(fullPath);
+          stream.pipe(writeStream);
+
+          writeStream.on("finish", next);
+          writeStream.on("error", next);
+        } else if (header.type === "directory") {
+          // Create directory
+          const fullPath = path.join(config.destination, destinationPath);
+          fs.mkdirSync(fullPath, { recursive: true });
+          stream.resume();
+          stream.on("end", next);
+        } else {
+          // Skip other types (symlinks, etc.)
+          stream.resume();
+          stream.on("end", next);
+        }
+      });
+
+      extract.on("error", (err) => {
+        console.error("Extraction error:", err);
+        throw err;
+      });
+
+      extract.on("finish", () => {
+        console.log("Tarball extraction complete");
+      });
+
+      // Error handling for streams
+      nodeStream.on("error", (err) => {
+        console.error("Stream error:", err);
+        throw err;
+      });
+
+      gunzip.on("error", (err) => {
+        console.error("Gunzip error:", err);
+        throw err;
+      });
+
+      // Pipe: GitHub tarball (.tar.gz) → gunzip → extract
+      nodeStream.pipe(gunzip).pipe(extract);
+
+      // Return a promise that resolves when extraction is complete
+      return new Promise<void>((resolve, reject) => {
+        extract.on("finish", resolve);
+        extract.on("error", reject);
+        nodeStream.on("error", reject);
+        gunzip.on("error", reject);
+      });
+    } catch (error) {
+      console.error("Download tarball failed:", error);
+      throw error;
     }
-
-    // 1st try to find a github tree in url using
-    // 'https://api.github.com/repos/kujo205/musc/git/trees/main?recursive=true'
-
-    // 2nd if no match, fetch default github branch and assign default branch to a tree
-
-    // 3rd filter out contents of a tree to match the desired
-
-    // 4rd filter out contents of a tree to match the desired folder, folder find path lengths, sort in descending order
-
-    // curl -L \https://api.github.com/repos/kujo205/musc/contents/tsconfig.json
-
-    // if (!match) {
-    //   throw new Error("Invalid GitHub URL");
-    // }
-    // return `https://raw.githubusercontent.com/${match[3]}/${match[4]}/main`;
   }
 
-  /**
-   * Copies github blob
-   * */
-  async copyBlob(params: GithubApiHelperObject) {
-    console.log("copying the blob");
-  }
-
-  /**
-   * Copies github tree
-   * */
-  async copyTree(params: GithubApiHelperObject) {
-    console.log("copying the tree");
-  }
-
-  /**
-   * Copies github repo
-   * */
-  async copyWholeRepo(params: GithubApiHelperObject) {
-    console.log("copying the repo");
+  toNodeReadable(webStream: ReadableStream<Uint8Array>): Readable {
+    // @ts-ignore
+    return Readable?.fromWeb(webStream as never);
   }
 }
 
