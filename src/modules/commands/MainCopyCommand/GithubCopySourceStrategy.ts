@@ -1,6 +1,5 @@
 import * as fs from "fs";
 import { Readable } from "stream";
-import { Octokit } from "@octokit/core";
 import * as tar from "tar-stream";
 
 import { createGunzip } from "zlib";
@@ -18,13 +17,6 @@ type GithubApiHelperObject = {
 
 class GithubCopySourceStrategy implements TCopySourceStrategy {
   regex = /^https?:\/\/github\.com\/([^/]+)\/([^/]+)/;
-  client: Octokit;
-
-  constructor() {
-    this.client = new Octokit({
-      auth: process.env.GITHUB_API_KEY,
-    });
-  }
 
   async copy(source: string, destination = ".") {
     const url = new URL(source);
@@ -67,7 +59,6 @@ class GithubCopySourceStrategy implements TCopySourceStrategy {
 
       // Build the target path from config.path
       const targetedPath = config.path.join("/");
-      console.log("Looking for files in:", targetedPath);
 
       // Handle extraction
       extract.on("entry", (header, stream, next) => {
@@ -77,7 +68,6 @@ class GithubCopySourceStrategy implements TCopySourceStrategy {
 
         // Skip if the file/directory is not in our target path
         if (!relativePath.startsWith(targetedPath)) {
-          console.log("Skipping:", relativePath);
           stream.resume(); // Consume and discard the stream
           stream.on("end", next);
           return;
@@ -130,7 +120,7 @@ class GithubCopySourceStrategy implements TCopySourceStrategy {
       });
 
       extract.on("finish", () => {
-        console.log("Tarball extraction complete");
+        console.log("👍 successfully extracted tarball to", config.destination);
       });
 
       // Error handling for streams
