@@ -12,5 +12,17 @@
 - [ ] Support for Linux/Unix/Macos
 - [ ] Support for Windows
 
+## Installation
+
+You must have npm installed in order to install this script.
+
+Run
+
+```bash
+npm install -g git-remote-copy
+```
+
+It is also suggested
+
 # Side quest
 - Implement as many pattern as possible, you can find info about patterns an examples of their implementation in PATTERNS.md

@@ -21,7 +21,16 @@ class GithubCopySourceStrategy implements TCopySourceStrategy {
   async copy(source: string, destination = ".") {
     const url = new URL(source);
     const segments = url.pathname.split("/").filter(Boolean);
-    const [ghUser, ghRepo, _, ref, ...path] = segments;
+
+    // https://github.com/kujo205/kujo205
+
+    let [ghUser, ghRepo, _, ref, ...path] = segments;
+
+    if (segments.length === 2) {
+      // if 2 segments is in url path - means it's a repo root URL
+      ref = await this.getGhRepoDefaultBranch(ghRepo, ghUser);
+      path = [];
+    }
 
     const helperObject = {
       ghRepo: ghRepo,
@@ -36,6 +45,7 @@ class GithubCopySourceStrategy implements TCopySourceStrategy {
 
   async downloadTarball(config: GithubApiHelperObject) {
     const targetedPath = config.path.join("/");
+    const targetFolderName = targetedPath.split("/").pop() || "";
 
     try {
       const resp = await fetch(
@@ -57,9 +67,6 @@ class GithubCopySourceStrategy implements TCopySourceStrategy {
       const gunzip = createGunzip();
       const extract = tar.extract();
 
-      // Build the target path from config.path
-      const targetedPath = config.path.join("/");
-
       // Handle extraction
       extract.on("entry", (header, stream, next) => {
         // GitHub tarballs have a root folder, we need to strip it
@@ -73,10 +80,6 @@ class GithubCopySourceStrategy implements TCopySourceStrategy {
           return;
         }
 
-        // Calculate the destination path - preserve the target directory name
-        // Extract the last segment of targetedPath as the base folder name
-        const targetFolderName = targetedPath.split("/").pop() || "extracted";
-
         // Get the relative path within the target directory
         const pathWithinTarget = relativePath
           .substring(targetedPath.length)
@@ -88,8 +91,8 @@ class GithubCopySourceStrategy implements TCopySourceStrategy {
           : targetFolderName;
 
         if (header.type === "file") {
-          // Create the file
           const fullPath = path.join(config.destination, destinationPath);
+
           const dir = path.dirname(fullPath);
 
           // Ensure directory exists
@@ -153,6 +156,14 @@ class GithubCopySourceStrategy implements TCopySourceStrategy {
   toNodeReadable(webStream: ReadableStream<Uint8Array>): Readable {
     // @ts-ignore
     return Readable?.fromWeb(webStream as never);
+  }
+
+  async getGhRepoDefaultBranch(repo: string, owner: string) {
+    const response = await fetch(
+      `https://api.github.com/repos/${owner}/${repo}`,
+    );
+    const data = await response.json();
+    return data.default_branch;
   }
 }
 
