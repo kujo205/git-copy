@@ -11,7 +11,7 @@ export class MainCopyCommand implements CommandWrapper {
       .name("main")
       .arguments("<source> <destination>")
       .description("Copy from source to destination")
-      .action(this.handleAction);
+      .action(this.handleAction.bind(this));
   }
 
   async handleAction(source: string, destination = ".") {

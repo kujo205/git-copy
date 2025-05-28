@@ -19,10 +19,3 @@ export interface TCopySourceStrategy {
    */
   copy(source: string, destination: string): void;
 }
-
-export type BlobItem = {
-  path: string;
-  sha: string;
-  size: number;
-  url: string;
-};
