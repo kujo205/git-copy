@@ -123,7 +123,9 @@ class GithubCopySourceStrategy implements TCopySourceStrategy {
       });
 
       extract.on("finish", () => {
-        console.log("👍 successfully extracted tarball to", config.destination);
+        console.log(
+          `👍 successfully copied all the files to <${config.destination}> destination`,
+        );
       });
 
       // Error handling for streams
