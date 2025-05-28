@@ -20,13 +20,13 @@
 
 You must have npm installed in order to install this script.
 
-### Basic installation
 
-Run
+### Basic installation
 
 ```bash
 npm install -g git-remote-copy
 ```
+
 
 And use it like 
 ```bash
@@ -53,10 +53,6 @@ to alias area
 
 After this you can use this command as if it is default git command
 <img width="965" alt="image" src="https://github.com/user-attachments/assets/da3c3124-9537-4ac7-8b9d-8f4f72214301" />
-
-
-
-
 
 
 

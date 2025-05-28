@@ -1,17 +1,6 @@
-import { Command } from "commander";
+import Main from "./modules/Main";
+import { MainCopyCommand } from "./modules/commands/MainCopyCommand";
 
-const packageJson = require("../package.json");
+const commands = [new MainCopyCommand()];
 
-
-const version: string = packageJson.version;
-
-
-
-const program = new Command();
-
-
-program
-	.version(version)
-	.name("my-command")
-	.option("-d, --debug", "enables verbose logging", false)
-	.parse(process.argv);
+const argParser = new Main(commands);
