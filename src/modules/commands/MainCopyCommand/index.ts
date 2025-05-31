@@ -9,8 +9,7 @@ export class MainCopyCommand implements CommandWrapper {
   constructor() {
     this.command = new Command()
       .name("main")
-      .arguments("<source>")
-      .option("-d, --destination <destination>", "Destination folder", ".")
+      .arguments("<source> [<destination>]")
       .description("Copy from source to destination")
       .action(this.handleAction.bind(this));
   }
