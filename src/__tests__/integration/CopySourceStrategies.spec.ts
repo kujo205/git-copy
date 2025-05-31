@@ -56,8 +56,23 @@ describe("GithubCopySourceStrategy", () => {
       console.log("files", files);
 
       expect(files[0]).toEqual("README.md");
+    });
 
-      expect(true).toBeTruthy();
+    it("should copy to cwd if no destination is provided", async () => {
+      const ghFileUrl =
+        "https://github.com/kujo205/musc/blob/dev/svelte.config.js";
+
+      await strategy.copy(ghFileUrl);
+
+      const files = fs.readdirSync(".");
+
+      const hasSvelteConfigFile = files.includes("svelte.config.js");
+
+      if (hasSvelteConfigFile) {
+        fs.unlinkSync("svelte.config.js");
+      }
+
+      expect(hasSvelteConfigFile).toEqual(true);
     });
   });
 });
