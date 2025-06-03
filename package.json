@@ -1,6 +1,6 @@
 {
   "name": "git-remote-copy",
-  "version": "0.0.0-development",
+  "version": "1.0.0",
   "description": "A utility command to copy any folders or files of any public github/gitlab/bitbucket repo to selected path, without copying the whole repo",
   "files": ["!lib/__tests__/**/*", "lib/**/*", "bin/**/*"],
   "bin": {
@@ -86,7 +86,7 @@
             {
               "type": "build",
               "scope": "deps",
-              "release": "patch"
+              "release": "minor"
             }
           ]
         }
