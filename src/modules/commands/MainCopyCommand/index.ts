@@ -31,8 +31,6 @@ export class MainCopyCommand implements CommandWrapper {
       size,
     } satisfies HistoryRecord;
 
-    console.log("emitting custom event", eventObject);
-
     events.emit(TCustomEvents.NEW_HISTORY_ITEM, eventObject);
   }
 }

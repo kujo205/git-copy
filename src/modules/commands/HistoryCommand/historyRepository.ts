@@ -45,7 +45,7 @@ class HistoryRepository {
     return new Promise((resolve, reject) => {
       console.log("Fetching all history records...");
       this.db.all(
-        `SELECT * FROM history ORDER BY timestamp DESC`,
+        `SELECT * FROM history ORDER BY timestamp`,
         [],
         (err: any, rows: HistoryRecord[] | PromiseLike<HistoryRecord[]>) => {
           if (err) reject(err);
