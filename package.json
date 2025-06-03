@@ -2,11 +2,7 @@
   "name": "git-remote-copy",
   "version": "0.0.0-development",
   "description": "A utility command to copy any folders or files of any public github/gitlab/bitbucket repo to selected path, without copying the whole repo",
-  "files": [
-    "!lib/__tests__/**/*",
-    "lib/**/*",
-    "bin/**/*"
-  ],
+  "files": ["!lib/__tests__/**/*", "lib/**/*", "bin/**/*"],
   "bin": {
     "git-remote-copy": "./bin/index.js"
   },
@@ -53,7 +49,6 @@
   "homepage": "https://github.com/kujo205/gitcopy#readme",
   "dependencies": {
     "commander": "^7.2.0",
-    "fuse.js": "^7.1.0",
     "node-fetch": "^3.3.2",
     "sqlite3": "^5.1.7",
     "tar": "^7.4.3",
@@ -81,9 +76,7 @@
     "*.ts": "npx @biomejs/biome format --write ./src"
   },
   "release": {
-    "branches": [
-      "main"
-    ],
+    "branches": ["main"],
     "plugins": [
       [
         "@semantic-release/commit-analyzer",
