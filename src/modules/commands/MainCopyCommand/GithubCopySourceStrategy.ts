@@ -40,10 +40,11 @@ class GithubCopySourceStrategy implements TCopySourceStrategy {
       destination,
     } satisfies GithubApiHelperObject;
 
-    await this.downloadTarball(helperObject);
+    return await this.downloadTarball(helperObject);
   }
 
-  async downloadTarball(config: GithubApiHelperObject) {
+  private async downloadTarball(config: GithubApiHelperObject) {
+    let totalSize = 0;
     const targetedPath = config.path.join("/");
     const targetFolderName = targetedPath.split("/").pop() || "";
 
@@ -91,6 +92,10 @@ class GithubCopySourceStrategy implements TCopySourceStrategy {
           : targetFolderName;
 
         if (header.type === "file") {
+          if (header.size) {
+            totalSize += header.size;
+          }
+
           const fullPath = path.join(config.destination, destinationPath);
 
           const dir = path.dirname(fullPath);
@@ -143,24 +148,26 @@ class GithubCopySourceStrategy implements TCopySourceStrategy {
       nodeStream.pipe(gunzip).pipe(extract);
 
       // Return a promise that resolves when extraction is complete
-      return new Promise<void>((resolve, reject) => {
+      await new Promise<void>((resolve, reject) => {
         extract.on("finish", resolve);
         extract.on("error", reject);
         nodeStream.on("error", reject);
         gunzip.on("error", reject);
       });
+
+      return totalSize;
     } catch (error) {
       console.error("Download tarball failed:", error);
       throw error;
     }
   }
 
-  toNodeReadable(webStream: ReadableStream<Uint8Array>): Readable {
+  private toNodeReadable(webStream: ReadableStream<Uint8Array>): Readable {
     // @ts-ignore
     return Readable?.fromWeb(webStream as never);
   }
 
-  async getGhRepoDefaultBranch(repo: string, owner: string) {
+  private async getGhRepoDefaultBranch(repo: string, owner: string) {
     const response = await fetch(
       `https://api.github.com/repos/${owner}/${repo}`,
     );

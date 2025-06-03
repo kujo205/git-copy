@@ -21,7 +21,9 @@
     "enabled": true,
     "rules": {
       "style": {
-        "useNodejsImportProtocol": "off"
+        "useImportType": "off",
+        "useNodejsImportProtocol": "off",
+        "noUnusedTemplateLiteral": "off"
       },
       "recommended": true
     }
