@@ -1,10 +1,10 @@
 import readline from "readline";
-import HistoryRepository, { HistoryRecord } from "./historyRepository";
 import events from "../../events";
+import HistoryRepository, { HistoryRecord } from "./historyRepository";
 
 class HistoryCommand {
   private records: HistoryRecord[] = [];
-  private currentIndex: number = 0;
+  private currentIndex = 0;
 
   async execute() {
     this.records = await HistoryRepository.getInstance().getAllRecords();

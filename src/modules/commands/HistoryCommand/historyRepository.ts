@@ -1,6 +1,6 @@
-import sqlite3 from "sqlite3";
-import path from "path";
 import { EventEmitter } from "events";
+import path from "path";
+import sqlite3 from "sqlite3";
 
 export interface HistoryRecord {
   id?: number;
@@ -50,6 +50,7 @@ class HistoryRepository {
 
   public getAllRecords(): Promise<HistoryRecord[]> {
     return new Promise((resolve, reject) => {
+      console.log("Fetching all history records...");
       this.db.all(
         `SELECT * FROM history ORDER BY timestamp DESC`,
         [],

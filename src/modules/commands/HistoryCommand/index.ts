@@ -9,7 +9,7 @@ export class HistoryCommand implements CommandWrapper {
     this.command = new Command()
       .name("history")
       .description("Show copy history")
-      .option("-h, --history", "Show copy history")
+      .option("-l, --list-history", "Show copy history")
       .action(async () => {
         const logic = new HistoryCommandLogic();
         await logic.execute();
