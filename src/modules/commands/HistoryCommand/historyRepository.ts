@@ -1,14 +1,7 @@
 import { EventEmitter } from "events";
 import path from "path";
 import sqlite3 from "sqlite3";
-
-export interface HistoryRecord {
-  id?: number;
-  source: string;
-  destination: string;
-  timestamp: string;
-  size: number;
-}
+import { type HistoryRecord } from "../../../types";
 
 class HistoryRepository {
   private static instance: HistoryRepository;

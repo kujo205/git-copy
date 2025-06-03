@@ -1,7 +1,12 @@
 import { Command } from "commander";
-import type { CommandWrapper, TCommand } from "../../../types";
+import {
+  type CommandWrapper,
+  type HistoryRecord,
+  type TCommand,
+  TCustomEvents,
+} from "../../../types";
+import events from "../../events";
 import { copyStrategyFactory } from "./CopyStrategyFactory";
-
 // Adapter pattern
 export class MainCopyCommand implements CommandWrapper {
   command: TCommand;
@@ -17,6 +22,17 @@ export class MainCopyCommand implements CommandWrapper {
   async handleAction(source: string, destination = ".") {
     const strategy = copyStrategyFactory(source);
 
-    await strategy.copy(source, destination);
+    const size = await strategy.copy(source, destination);
+
+    const eventObject = {
+      source,
+      destination,
+      timestamp: new Date().toISOString(),
+      size,
+    } satisfies HistoryRecord;
+
+    console.log("emitting custom event", eventObject);
+
+    events.emit(TCustomEvents.NEW_HISTORY_ITEM, eventObject);
   }
 }
