@@ -2,7 +2,11 @@
   "name": "git-remote-copy",
   "version": "1.0.0",
   "description": "A utility command to copy any folders or files of any public github/gitlab/bitbucket repo to selected path, without copying the whole repo",
-  "files": ["!lib/__tests__/**/*", "lib/**/*", "bin/**/*"],
+  "files": [
+    "!lib/__tests__/**/*",
+    "lib/**/*",
+    "bin/**/*"
+  ],
   "bin": {
     "git-remote-copy": "./bin/index.js"
   },
